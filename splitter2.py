@@ -7,8 +7,10 @@ outputFileOpen = open(outputFile, 'w')
 jList = []
 n = 0
 while n < int(noFiles):
-    inputFile = ''.join([filename, noFiles, fileExt])                       # creates name of input file
+    inputFile = ''.join([fileNForm, n, fileExt])                       # creates name of input file
     lines = [line.rstrip('\n') for line in open(inputFile)]                 # splits lines into individual variables
+    jList.append([lines[3]])
+
 
     x=0
     while x<203:                                                            # replaces all spaces with commas
