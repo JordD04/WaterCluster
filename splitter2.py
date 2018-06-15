@@ -1,18 +1,19 @@
-fileNForm = input('\nEnter generic form of file name: ')                    # finds file name
+fileNForm = input('\nEnter generic form of file name: ')                   # finds file name
 noFiles = input('\nEnter number of files: ')
 fileExt = input('\nEnter file extension: ')
-outputFile = ''.join([fileNForm, '.csv'])                                   # creates name of output file
+noTemp = input('\nEnter number of discrete temperature values: ')          # finds number of discrete temperature values
+outputFile = ''.join([fileNForm, '.csv'])                                  # creates name of output 
 outputFileOpen = open(outputFile, 'w')
 
-jList = []
+
+jList = [[] for i in range(noTemp)]
 n = 0
 while n < int(noFiles):
-    inputFile = ''.join([fileNForm, n, fileExt])                       # creates name of input file
-    lines = [line.rstrip('\n') for line in open(inputFile)]                 # splits lines into individual variables
+    inputFile = ''.join([fileNForm, n, fileExt])                           # creates name of input file
+    lines = [line.rstrip('\n') for line in open(inputFile)]                # splits lines into individual variables
 
-    jList.append([])
     x=2
-    while x<203:                                                            # replaces all spaces with commas
+    while x<203:                                                           # replaces all spaces with commas
         lineSplit = lines[x].split(' ')
         heatCap = lineSplit[3]
         jList[x-2].append([heatCap])
