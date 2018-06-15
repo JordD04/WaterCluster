@@ -10,11 +10,12 @@ while n < int(noFiles):
     inputFile = ''.join([fileNForm, n, fileExt])                       # creates name of input file
     lines = [line.rstrip('\n') for line in open(inputFile)]                 # splits lines into individual variables
 
-    x=0
+    jList.append([])
+    x=2
     while x<203:                                                            # replaces all spaces with commas
         lineSplit = lines[x].split(' ')
         heatCap = lineSplit[3]
-        jList.append([heatCap])
+        jList[x-2].append([heatCap])
         x=x+1
     n=n+1
 
