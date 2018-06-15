@@ -1,3 +1,5 @@
+# script that takes the fourth row of a series 'csv' files with spaces instead of commas and then stores those rows as a csv file
+
 fileNForm = input('\nEnter generic form of file name: ')                   # finds file name
 noFiles = input('\nEnter number of files: ')
 fileExt = input('\nEnter file extension: ')
@@ -14,10 +16,9 @@ while n < int(noFiles):
 
     x=2                                                                    # x = row of file
     while x<int(noTemp)+2:                                                 # replaces all spaces with commas
-        print(lines[x])
         lineSplit = lines[x].split(' ')
         heatCap = lineSplit[3]
-        jList[x-2].append([heatCap])
+        jList[x-2].append(heatCap)
         x=x+1
     n=n+1
 
@@ -25,7 +26,7 @@ noTempCount = 0
 while noTempCount < int(noTemp):
         activeRowList = jList[noTempCount]
         newline = ', '.join(activeRowList)
-        outputFileOpen.write(newline)
+        outputFileOpen.write(newline+'\n')
         noTempCount = noTempCount+1
 
 outputFileOpen.close()
