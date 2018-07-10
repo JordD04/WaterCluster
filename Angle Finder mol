@@ -1,0 +1,174 @@
+from math import sqrt, acos, degrees
+
+userInput = input('Enter traj file name: ')
+
+inputFile = ''.join([userInput, '.extxyz'])                                 # creates name of input file
+outputFile = ''.join([userInput, '.csv'])                                   # creates name of output file
+outputFileOpen = open(outputFile, 'w')
+
+
+linesTraj = [line.rstrip('\n') for line in open(inputFile)]
+noAt = int(linesTraj[0])                                                    # finds the number of atoms in the cluster
+noMol = int(noAt/3)
+cellSize = float(((linesTraj[1].split(' '))[0].split('"'))[1])              # finds lattice dimensions
+centre = cellSize/2
+
+def coordMover(Prime, mol2, jList, centreDist):                             # moves cluster to centre
+    x1old = float(jList[Prime][0])                                          # finds x coord of prime molecule
+    y1old = float(jList[Prime][1])
+    z1old = float(jList[Prime][2])
+    x2old = float(jList[mol2][0])                                           # finds x coord of distance checking molecule
+    y2old = float(jList[mol2][1])
+    z2old = float(jList[mol2][2])
+
+    x1 = x1old - centreDist[0]                                              # moves coords
+    if x1 > cellSize:
+        x1 = x1 - cellSize
+    if x1 < 0:
+        x1 = cellSize + x1
+    y1 = y1old - centreDist[1]
+    if y1 > cellSize:
+        y1 = y1 - cellSize
+    if y1 < 0:
+        y1 = cellSize + y1
+    z1 = z1old - centreDist[2]
+    if z1 > cellSize:
+        z1 = z1 - cellSize
+    if z1 < 0:
+        z1 = cellSize + z1
+    x2 = x2old - centreDist[0]
+    if x2 > cellSize:
+        x2 = x2 - cellSize
+    if x2 < 0:
+        x2 = cellSize + x2
+    y2 = y2old - centreDist[1]
+    if y2 > cellSize:
+        y2 = y2 - cellSize
+    if y2 < 0:
+        y2 = cellSize + y2
+    z2 = z2old - centreDist[2]
+    if z2 > cellSize:
+        z2 = z2 - cellSize
+    if z2 < 0:
+        z2 = cellSize + z2
+    return x1, y1, z1, x2, y2, z2
+
+def centreDrift(lines) :                                                    # finds distance cluster has drifted from centre
+    lineSplit = lines[2].split()
+    xcoord = float(lineSplit[1])                                            # finds x coordinate
+    ycoord = float(lineSplit[2])                                            # finds y coordinate
+    zcoord = float(lineSplit[3])                                            # finds z coordinate
+    xDist = xcoord - centre
+    yDist = ycoord - centre
+    zDist = zcoord - centre
+
+    return xDist, yDist, zDist
+
+
+def distanceCalc(Prime, mol2, jList, centreDist):                           # finds the distance between molecules
+    newCoords = coordMover(Prime, mol2, jList, centreDist)
+
+    #print(newCoords)
+
+    x1 = newCoords[0]                                                       # finds x coord of prime molecule
+    y1 = newCoords[1]
+    z1 = newCoords[2]
+    x2 = newCoords[3]                                                       # finds x coord of distance checking molecule
+    y2 = newCoords[4]
+    z2 = newCoords[5]
+    xcomp = (x2 - x1) ** 2
+    ycomp = (y2 - y1) ** 2
+    zcomp = (z2 - z1) ** 2
+    distance = sqrt(xcomp + ycomp + zcomp)                                  # finds distance between molecules
+    return distance
+
+
+def angleFinder1(lines, centreDist):                                        # calculates angle for single config
+    jList = [[] for i in range(noMol)]                                      # creates a list of molecules (blank)
+    angleList = []
+    neighbourListPerm = []
+
+    n = 2                                                                   # iterates through molecules to make list of coords
+    n2 = 0                                                                  # increments through where coords are printed
+    while n < noAt + 2:
+        lineSplit = lines[n].split()
+        xcoord = lineSplit[1]                                               # finds x coordinate
+        ycoord = lineSplit[2]                                               # finds y coordinate
+        zcoord = lineSplit[3]                                               # finds z coordinate
+        jList[n2].append(xcoord)                                            # adds coordinates as list to in list of molecules
+        jList[n2].append(ycoord)
+        jList[n2].append(zcoord)
+        n = n + 3
+        n2 = n2 + 1
+
+    Prime = 0                                                               # iterates through molecules to find angles
+    while Prime < noMol:
+        neighbourList = []
+        mol2 = 0
+        while mol2 < noMol:
+            if mol2 - Prime != 0:
+                if distanceCalc(Prime, mol2, jList, centreDist) <= 3.1:
+                    neighbourList.append(mol2)
+            mol2 = mol2 + 1
+        noNeighbour = len(neighbourList)                                    # finds the number of neighbours
+        neighbourListPerm.append(noNeighbour)
+
+        if noNeighbour > 1:                                                 # checks if there's enough neighbours to find angle
+            secondIt = 0                                                    # loops through first set of neighbours
+            while secondIt < noNeighbour:
+                second = neighbourList[secondIt]                            # finds molecule for angle
+                thirdIt = secondIt + 1
+                while thirdIt < noNeighbour:
+                    third = neighbourList[thirdIt]                          # finds molecule for angle
+                    dist1 = distanceCalc(Prime, second, jList, centreDist)  # finds first triangle length
+                    dist2 = distanceCalc(Prime, third, jList, centreDist)   # finds second triangle length
+                    dist3 = distanceCalc(second, third, jList, centreDist)  # finds third triangle length
+                    cosAngle = (dist1 ** 2 + dist2 ** 2 - dist3 ** 2) / (2 * dist1 * dist2)
+                    angle = degrees(acos(cosAngle))
+                    thirdIt = thirdIt + 1
+                    angleList.append(angle)
+                secondIt = secondIt + 1
+        Prime = Prime + 1
+
+    noAngles = len(angleList)                                               # finds number of angles
+    angleSum = 0
+    n = 0
+    while n < noAngles:                                                     # summs all the angles
+        angleSum = angleSum + angleList[n]
+        n = n + 1
+    if noAngles > 0:                                                        # tests if there are any angles
+        angleAvg = angleSum / noAngles                                      # finds average angle
+    else:
+        angleAvg = 0
+
+    noNeighbours = len(neighbourListPerm)                                   # finds number of angles
+    neighbourSum = 0
+    n = 0
+    while n < noNeighbours:
+        neighbourSum = neighbourSum + neighbourListPerm[n]
+        n = n +1
+    if noNeighbours > 0:                                                    # tests if there are any angles
+        aveNN = neighbourSum / noMol                                        # finds average angle
+    else:
+        aveNN = 0
+
+    return angleAvg, aveNN
+
+
+config = 0                                                                  # iterates through configurations
+looping = 1                                                                 # variable for detecting if all configs are analysed
+while looping == 1:
+    print(config)
+    counter = config*(noAt+2)
+    lineFirst = int(linesTraj[counter])                                     # finds value for first row of config (should be == noMol)
+    if lineFirst == noAt:                                                   # tests if config exists
+        lines = linesTraj[counter:counter+((noAt*3)+2)]                     # creates list for given configuration
+        centreDist = centreDrift(lines)                                     # finds distance of cluster from centre
+        angleAvg2 = angleFinder1(lines, centreDist)                         # finds average angle of config
+        cellDataSplit = lines[1].split('ns_energy=')
+        energy = (cellDataSplit[1].split(' '))[0]                           # finds energy of config
+        newLine = ''.join([energy, ',', str(angleAvg2[0]), ',', str(angleAvg2[1])])             # generates row of data
+        outputFileOpen.write(newLine + '\n')                                # writes to CSV
+        config = config + 1
+    else:
+        looping = 0
