@@ -43,8 +43,6 @@ while series < noSeries:                                                # iterat
     ax.plot(xList, YList1, colours[colourCycle], marker='x', linestyle='')
     colourCycle = colourCycle + 1
 
-ax.plot([8, 26], [-2.7267, -10.7223], 'r--', lw=1)
-
 plt.ylabel('Potential Energy / eV')                                      # sets axis labels
 plt.xlabel('Cluster Size / molecules')
 
