@@ -1,0 +1,53 @@
+# reads two columns of a CSV and plots them as a scatter graph
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+userinput = input('[Filename] [No. Columns] [Y Cap]: ')
+inputList = userinput.split(' ')
+filename = inputList[0]
+noSeries = int(inputList[1])
+yCap = float(inputList[2])
+inputFile = ''.join([filename, '.csv'])                                 # creates name of input file
+
+print(inputFile)
+
+colours = ['#396ab1','#da7c30','#3e9651','#cc2529','#535154', '#6b4c9a', '#922428', '#948b3d']
+
+lines = [line.rstrip('\n') for line in open(inputFile)]
+noRows = len(lines)
+xList = []
+yLists = [[] for i in range(noSeries)]
+
+activeLine = 0
+while activeLine < noRows:
+    lineSplit = lines[activeLine].split(',')
+    xList.append(float(lineSplit[0]))                                   # finds temperatures
+    series = 0
+    while series < noSeries:
+        yLists[series].append(float(lineSplit[series+1]))               # finds heat capacities for each series
+        series = series + 1
+    activeLine = activeLine + 1
+
+linePlots = [[] for i in range(noSeries)]                               # creates a list of series
+
+fig, ax = plt.subplots()
+
+series = 0
+colourCycle = 0
+while series < noSeries:                                                # iterates through and plots series
+    if colourCycle == 8:
+        colourCycle = 0
+    YList1 = yLists[series]
+    series = series + 1
+    ax.plot(xList, YList1, colours[colourCycle], marker='x', linestyle='')
+    colourCycle = colourCycle + 1
+
+ax.plot([8, 26], [-2.7267, -10.7223], 'r--', lw=1)
+
+plt.ylabel('Potential Energy / eV')                                      # sets axis labels
+plt.xlabel('Cluster Size / molecules')
+
+ax.xaxis.set_ticks(np.arange(0, 31, 1))                                  # sets axis parameters
+ax.yaxis.set_ticks(np.arange(0, yCap, 0.002))
+plt.show()
